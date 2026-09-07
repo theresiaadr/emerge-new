@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}Dashboard SPV{% endblock %}
+{% block page_title %}Dashboard SPV{% endblock %}
+{% block page_sub %}Rekap kunjungan seluruh sales.{% endblock %}
+{% block content %}
+<form method="get" class="filter-row card" data-testid="filter-form">
+  <label class="field inline-field">
+    <span>Bulan</span>
+    <select name="bulan" class="input" data-testid="filter-bulan">
+      <option value="">Semua bulan</option>
+      {% for val, label in bulan_opsi %}<option value="{{ val }}" {% if filter.bulan == val %}selected{% endif %}>{{ label }}</option>{% endfor %}
+    </select>
+  </label>
+  <label class="field inline-field">
+    <span>Sales</span>
+    <select name="sales" class="input" data-testid="filter-sales">
+      <option value="">Semua sales</option>
+      {% for s in sales_opsi %}<option value="{{ s.pk }}" {% if filter.sales == s.pk|stringformat:"s" %}selected{% endif %}>{{ s.nama }}</option>{% endfor %}
+    </select>
+  </label>
+  <label class="field inline-field">
+    <span>Status</span>
+    <select name="status" class="input" data-testid="filter-status">
+      <option value="">Semua status</option>
+      {% for val, label in status_opsi %}<option value="{{ val }}" {% if filter.status == val %}selected{% endif %}>{{ label }}</option>{% endfor %}
+    </select>
+  </label>
+  <div class="filter-actions">
+    <button type="submit" class="btn primary" data-testid="filter-submit"><i class="fa-solid fa-filter"></i> Terapkan</button>
+    <a href="{% url 'dashboard' %}" class="btn line" data-testid="filter-reset">Reset</a>
+    <a href="{% url 'export_excel' %}{% if query %}?{{ query }}{% endif %}" class="btn gold" data-testid="btn-export-excel"><i class="fa-solid fa-file-excel"></i> Export Excel</a>
+  </div>
+</form>
+
+<div class="stats" data-testid="stats">
+  <div class="stat"><span class="stat-label">Total Kunjungan</span><span class="stat-num" data-testid="stat-total">{{ stats.total }}</span></div>
+  <div class="stat"><span class="stat-label">Instansi Unik</span><span class="stat-num" data-testid="stat-instansi">{{ stats.instansi }}</span></div>
+  <div class="stat"><span class="stat-label">Closing</span><span class="stat-num" data-testid="stat-closing">{{ stats.closing }}</span></div>
+  <div class="stat"><span class="stat-label">Bulan Ini</span><span class="stat-num" data-testid="stat-bulan-ini">{{ stats.bulan_ini }}</span></div>
+</div>
+
+<div class="grid-2">
+  <div class="card">
+    <div class="card-head"><h2>Kunjungan per Sales</h2></div>
+    {% if per_sales %}
+    <div class="chart" data-testid="chart-per-sales">
+      {% for p in per_sales %}
+      <div class="bar-row">
+        <span class="bar-label">{{ p.nama }}</span>
+        <div class="bar-track"><div class="bar" style="width: {{ p.pct }}%"></div></div>
+        <span class="bar-val">{{ p.n }}</span>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty"><i class="fa-regular fa-chart-bar"></i><p>Belum ada data untuk filter ini.</p></div>
+    {% endif %}
+  </div>
+  <div class="card">
+    <div class="card-head"><h2>Sebaran Status</h2></div>
+    <div class="status-legend">
+      {% for val, label in status_opsi %}<span class="badge {{ val }}">{{ label }}</span>{% endfor %}
+    </div>
+    <p class="muted small">Klik "Detail" pada tabel untuk melihat timeline dan log WA (read-only).</p>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-head"><h2>Daftar Kunjungan</h2><span class="muted small">{{ stats.total }} data</span></div>
+  <div class="table-wrap">
+  <table class="table" data-testid="tabel-kunjungan">
+    <thead><tr><th>Tanggal</th><th>Instansi</th><th>Sales</th><th>Status</th><th>Tahap</th><th></th></tr></thead>
+    <tbody>
+    {% for k in kunjungan %}
+      <tr data-testid="row-kunjungan-{{ k.pk }}">
+        <td>{{ k.tanggal|date:"d M Y" }}</td>
+        <td class="strong">{{ k.instansi.nama }}</td>
+        <td>{{ k.sales.nama }}</td>
+        <td><span class="badge {{ k.status }}">{{ k.get_status_display }}</span></td>
+        <td class="muted">{{ k.get_tahap_display }}</td>
+        <td class="right"><a href="{% url 'kunjungan_detail' k.pk %}" class="link" data-testid="link-detail-{{ k.pk }}">Detail</a></td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="6" class="empty-cell">Tidak ada kunjungan.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+</div>
+{% endblock %}

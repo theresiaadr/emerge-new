@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}Masuk{% endblock %}
+{% block body_class %}lg-page{% endblock %}
+{% block body %}
+<div class="lg-bg"><span class="lg-blob a"></span><span class="lg-blob b"></span></div>
+<div class="lg-wrap">
+  <div class="lg-card" data-testid="login-card">
+    <div class="lg-form">
+      <div class="lg-logo"><i class="fa-solid fa-chart-column"></i><span>Srikaton</span></div>
+      <h1>Selamat datang kembali</h1>
+      <p class="lg-lead">Masuk untuk mencatat kunjungan dan memantau follow-up sales.</p>
+
+      {% if form.non_field_errors %}
+      <div class="lg-error" data-testid="login-error">{{ form.non_field_errors.0 }}</div>
+      {% endif %}
+
+      <form method="post" novalidate data-testid="login-form">
+        {% csrf_token %}
+        {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+        <label class="field">
+          <span>{{ form.username.label }}</span>
+          {{ form.username }}
+          {% for e in form.username.errors %}<small class="err">{{ e }}</small>{% endfor %}
+        </label>
+        <label class="field">
+          <span>{{ form.password.label }}</span>
+          {{ form.password }}
+          {% for e in form.password.errors %}<small class="err">{{ e }}</small>{% endfor %}
+        </label>
+        <div class="field lg-captcha">
+          <span>{{ form.captcha.label }}</span>
+          <div class="lg-captcha-row">
+            {{ form.captcha }}
+            <button type="button" class="lg-refresh" id="captcha-refresh" title="Ganti kode" data-testid="captcha-refresh"><i class="fa-solid fa-rotate"></i></button>
+          </div>
+          {% for e in form.captcha.errors %}<small class="err" data-testid="captcha-error">{{ e }}</small>{% endfor %}
+        </div>
+        <button type="submit" class="btn primary block" data-testid="login-submit"><i class="fa-solid fa-right-to-bracket"></i> Masuk</button>
+      </form>
+      <p class="lg-foot">Akses terbatas untuk tim Srikaton. Hubungi admin bila lupa password.</p>
+    </div>
+
+    <div class="lg-brand">
+      <span class="lg-box b1"></span><span class="lg-box b2"></span><span class="lg-box b3"></span><span class="lg-box b4"></span>
+      <div class="lg-brand-inner">
+        <div class="lg-kicker">report.srikaton.id</div>
+        <h2>Catat kunjungan.<br>Kawal follow-up.<br>Closing lebih cepat.</h2>
+        <ul class="lg-feats">
+          <li><i class="fa-solid fa-location-dot"></i><div><b>Kunjungan Terstruktur</b><span>Deteksi instansi yang sudah pernah dikunjungi tim lain.</span></div></li>
+          <li><i class="fa-brands fa-whatsapp"></i><div><b>Blast WA H0 / H2 / H5</b><span>Template pesan otomatis dengan reminder harian.</span></div></li>
+          <li><i class="fa-solid fa-chart-simple"></i><div><b>Dashboard SPV</b><span>Rekap per sales, filter bulan & status, export Excel.</span></div></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+  document.getElementById('captcha-refresh').addEventListener('click', function () {
+    fetch("{% url 'captcha-refresh' %}", {headers: {'X-Requested-With': 'XMLHttpRequest'}})
+      .then(r => r.json())
+      .then(d => {
+        document.querySelector('.lg-captcha img.captcha').src = d.image_url;
+        document.querySelector('input[name="captcha_0"]').value = d.key;
+        document.querySelector('input[name="captcha_1"]').value = '';
+      });
+  });
+</script>
+{% endblock %}

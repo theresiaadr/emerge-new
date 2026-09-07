@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Akun Terkunci{% endblock %}
+{% block body_class %}lg-page{% endblock %}
+{% block body %}
+<div class="lg-wrap">
+  <div class="card lock" data-testid="lockout-card">
+    <i class="fa-solid fa-lock"></i>
+    <h1>Akun terkunci sementara</h1>
+    <p>Terlalu banyak percobaan login gagal. Coba lagi dalam 1 jam atau hubungi admin.</p>
+    <a href="{% url 'login' %}" class="btn line">Kembali ke halaman masuk</a>
+  </div>
+</div>
+{% endblock %}

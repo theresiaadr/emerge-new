@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Kunjungan{% endblock %}
+{% block page_title %}Kunjungan{% endblock %}
+{% block page_sub %}{% if user.is_spv %}Semua kunjungan sales (read-only).{% else %}Daftar kunjungan yang kamu catat.{% endif %}{% endblock %}
+{% block content %}
+<div class="card">
+  <div class="card-head wrap">
+    <form method="get" class="search" data-testid="search-form">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input type="search" name="q" value="{{ q }}" class="input" placeholder="Cari instansi..." data-testid="search-input">
+    </form>
+    {% if user.is_sales %}
+    <a href="{% url 'kunjungan_baru' %}" class="btn primary" data-testid="btn-kunjungan-baru"><i class="fa-solid fa-plus"></i> Tambah Kunjungan</a>
+    {% endif %}
+  </div>
+  <div class="table-wrap">
+  <table class="table" data-testid="tabel-kunjungan">
+    <thead><tr><th>Tanggal</th><th>Instansi</th>{% if user.is_spv %}<th>Sales</th>{% endif %}<th>PIC</th><th>Status</th><th>Tahap</th><th></th></tr></thead>
+    <tbody>
+    {% for k in kunjungan %}
+      <tr data-testid="row-kunjungan-{{ k.pk }}">
+        <td>{{ k.tanggal|date:"d M Y" }}</td>
+        <td class="strong">{{ k.instansi.nama }}</td>
+        {% if user.is_spv %}<td>{{ k.sales.nama }}</td>{% endif %}
+        <td class="muted">{{ k.instansi.pic|default:"-" }}</td>
+        <td><span class="badge {{ k.status }}">{{ k.get_status_display }}</span></td>
+        <td class="muted">{{ k.get_tahap_display }}</td>
+        <td class="right actions">
+          <a href="{% url 'kunjungan_detail' k.pk %}" class="link" data-testid="link-detail-{{ k.pk }}">Detail</a>
+          {% if user.is_sales %}<a href="{% url 'kunjungan_edit' k.pk %}" class="btn line xs" data-testid="btn-edit-{{ k.pk }}"><i class="fa-solid fa-pen"></i> Edit</a>{% endif %}
+        </td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="7" class="empty-cell" data-testid="empty-kunjungan">Belum ada kunjungan.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+</div>
+{% endblock %}

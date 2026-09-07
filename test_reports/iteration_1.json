@@ -1,0 +1,25 @@
+{
+  "summary": "Django Report Sales app fully tested end-to-end via public preview URL. 27 Django unit tests pass, plus 20 pytest e2e HTTP tests covering login/captcha, SPV dashboard+filters+export, sales scope isolation, kunjungan CRUD (create with new + case-insensitive reuse, edit to CLOSING), cek_instansi AJAX, WA H2 POST → wa.me redirect + timeline update, logout POST-only (405 on GET), admin access, anonymous redirect. Playwright UI verified: SPV dashboard, sales dashboard, cek_instansi AJAX callout showing 'Sudah dikunjungi oleh Maryadi', blast WA page with H0/H2/H5 buttons and green-check indicator for sent H2, logout POST. All data-testids present and reachable.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": []},
+  "test_report_links": [
+    "/app/backend/tests/test_e2e_api.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Everything solid. Minor: /app/backend/report/forms.py field order & Meta.fields intentionally split model vs non-model fields — well structured.",
+    "Case-insensitive uniqueness relies on Instansi.objects.filter(nama__iexact=nama).first() — works; consider a DB-level unique index on lower(nama) for concurrency safety in future PG deploy.",
+    "Root path / returns 200 (login HTML) instead of redirecting to /api/login/; not per spec but harmless in preview since /api/login/ is the canonical entrypoint. May want an explicit 302 for cleanliness."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_e2e_api.py (new)",
+    "/app/backend/tests/__init__.py (new empty)"
+  ],
+  "success_rate": {"backend": "100% (20/20 e2e + 27/27 Django unit)", "frontend": "100% critical flows"},
+  "test_credentials": "devy/Srikaton#2026 (SPV), utoro/Srikaton#2026 (Sales), maryadi/Srikaton#2026 (Sales), clyde/Srikaton#2026 (superuser). Captcha in preview = 'PASSED'.",
+  "seed_data_creation": "Test created two extra 'SD Negeri Testing 99' kunjungan and extra 'SMKN 1 Purworejo' kunjungan (from case-insensitive test + closing edit run). Seed institutions untouched; existing kunjungans preserved. No cleanup performed.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Run e2e: `cd /app/backend && REACT_APP_BACKEND_URL=... python -m pytest tests/test_e2e_api.py -n 0 --junitxml=/app/test_reports/pytest/pytest_results.xml`. pytest.ini forces xdist -n 2 loadscope, override with -n 0 for sequential (tests share module-scoped sessions). Field names in KunjunganForm are `tanggal`, `status`, `catatan` (NOT tanggal_kunjungan/status_pembicaraan). Login CSRF via /api/login/ form, then POST with captcha_0 (hidden hash), captcha_1='PASSED', Referer header, follow allow_redirects=False. Django admin uses Indonesian labels — check for 'Instansi'/'Kunjungan' strings, not 'User'."
+}

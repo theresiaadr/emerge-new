@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}{{ judul }}{% endblock %}
+{% block page_title %}{{ judul }}{% endblock %}
+{% block page_sub %}Ketik nama instansi — sistem otomatis mengecek riwayat kunjungan.{% endblock %}
+{% block content %}
+<div class="card narrow">
+  <form method="post" novalidate data-testid="kunjungan-form">
+    {% csrf_token %}
+    {% if form.non_field_errors %}<div class="lg-error">{{ form.non_field_errors.0 }}</div>{% endif %}
+
+    <div id="callout" class="callout gold hidden" data-testid="callout-instansi">
+      <i class="fa-solid fa-circle-info"></i>
+      <div><b id="callout-title">Sudah dikunjungi</b><span id="callout-text"></span></div>
+    </div>
+
+    <div class="form-grid">
+      {% for f in form %}
+      <label class="field {% if f.name == 'catatan' or f.name == 'alamat' or f.name == 'nama_instansi' %}span-2{% endif %}">
+        <span>{{ f.label }}{% if f.field.required %} <em>*</em>{% endif %}</span>
+        {{ f }}
+        {% for e in f.errors %}<small class="err">{{ e }}</small>{% endfor %}
+      </label>
+      {% endfor %}
+    </div>
+    <datalist id="daftar-instansi">
+      {% for n in instansi_names %}<option value="{{ n }}"></option>{% endfor %}
+    </datalist>
+
+    <div class="form-actions">
+      <a href="{% if kunjungan %}{% url 'kunjungan_detail' kunjungan.pk %}{% else %}{% url 'kunjungan_list' %}{% endif %}" class="btn line" data-testid="btn-batal">Batal</a>
+      <button type="submit" class="btn primary" data-testid="btn-simpan"><i class="fa-solid fa-floppy-disk"></i> Simpan</button>
+    </div>
+  </form>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+(function () {
+  const nama = document.querySelector('[name="nama_instansi"]');
+  const callout = document.getElementById('callout');
+  const text = document.getElementById('callout-text');
+  const title = document.getElementById('callout-title');
+  const fill = {alamat: document.querySelector('[name="alamat"]'), pic: document.querySelector('[name="pic"]'), no_wa: document.querySelector('[name="no_wa"]')};
+  const url = "{% url 'cek_instansi' %}";
+  const exclude = "{{ kunjungan.pk|default:'' }}";
+  let timer;
+  function cek() {
+    const v = nama.value.trim();
+    if (v.length < 3) { callout.classList.add('hidden'); return; }
+    fetch(url + '?nama=' + encodeURIComponent(v) + (exclude ? '&exclude=' + exclude : ''), {headers: {'X-Requested-With': 'XMLHttpRequest'}})
+      .then(r => r.json())
+      .then(d => {
+        if (!d.exists) { callout.classList.add('hidden'); return; }
+        Object.keys(fill).forEach(k => { if (fill[k] && !fill[k].value && d[k]) fill[k].value = d[k]; });
+        if (d.sudah_dikunjungi) {
+          title.textContent = 'Sudah dikunjungi';
+          text.textContent = d.pesan + ' · status ' + d.status + '. Data alamat/PIC/WA diisi otomatis.';
+        } else {
+          title.textContent = 'Instansi sudah terdaftar';
+          text.textContent = 'Data alamat/PIC/WA diisi otomatis dari database.';
+        }
+        callout.classList.remove('hidden');
+      });
+  }
+  nama.addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(cek, 350); });
+  nama.addEventListener('blur', cek);
+  if (nama.value) cek();
+})();
+</script>
+{% endblock %}

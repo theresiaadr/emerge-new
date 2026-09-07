@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Halo, {{ user.first_name|default:user.username }}{% endblock %}
+{% block page_sub %}Ringkasan kunjungan kamu.{% endblock %}
+{% block content %}
+<div class="stats" data-testid="stats">
+  <div class="stat"><span class="stat-label">Total Kunjungan</span><span class="stat-num" data-testid="stat-total">{{ stats.total }}</span></div>
+  <div class="stat"><span class="stat-label">Bulan Ini</span><span class="stat-num" data-testid="stat-bulan-ini">{{ stats.bulan_ini }}</span></div>
+  <div class="stat"><span class="stat-label">Closing</span><span class="stat-num" data-testid="stat-closing">{{ stats.closing }}</span></div>
+  <div class="stat gold"><span class="stat-label">Reminder Hari Ini</span><span class="stat-num" data-testid="stat-reminder">{{ stats.reminder }}</span></div>
+</div>
+
+<div class="card">
+  <div class="card-head">
+    <h2>5 Kunjungan Terbaru</h2>
+    <a href="{% url 'kunjungan_baru' %}" class="btn primary sm" data-testid="btn-kunjungan-baru"><i class="fa-solid fa-plus"></i> Kunjungan Baru</a>
+  </div>
+  {% if terbaru %}
+  <div class="table-wrap">
+  <table class="table" data-testid="tabel-terbaru">
+    <thead><tr><th>Tanggal</th><th>Instansi</th><th>Status</th><th>Tahap</th><th></th></tr></thead>
+    <tbody>
+    {% for k in terbaru %}
+      <tr>
+        <td>{{ k.tanggal|date:"d M Y" }}</td>
+        <td class="strong">{{ k.instansi.nama }}</td>
+        <td><span class="badge {{ k.status }}">{{ k.get_status_display }}</span></td>
+        <td class="muted">{{ k.get_tahap_display }}</td>
+        <td class="right"><a href="{% url 'kunjungan_detail' k.pk %}" class="link" data-testid="link-detail-{{ k.pk }}">Detail</a></td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% else %}
+  <div class="empty" data-testid="empty-terbaru"><i class="fa-regular fa-folder-open"></i><p>Belum ada kunjungan. Mulai catat kunjungan pertamamu.</p></div>
+  {% endif %}
+</div>
+{% endblock %}

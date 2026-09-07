@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Blast WA{% endblock %}
+{% block page_title %}Blast WhatsApp{% endblock %}
+{% block page_sub %}Kirim pesan H0 (hari kunjungan), H2 (follow-up), H5 (penawaran). Reminder aktif otomatis pada H+2 dan H+5.{% endblock %}
+{% block content %}
+<div class="card">
+  <div class="card-head">
+    <h2>Instansi & Follow-up</h2>
+    {% if reminder_count %}<span class="badge REMINDER" data-testid="reminder-total"><i class="fa-regular fa-bell"></i> {{ reminder_count }} reminder hari ini</span>{% endif %}
+  </div>
+  <div class="table-wrap">
+  <table class="table" data-testid="tabel-blast">
+    <thead><tr><th>Instansi</th><th>PIC / WA</th><th>Kunjungan</th>{% if user.is_spv %}<th>Sales</th>{% endif %}<th>Status</th><th>Tahap</th><th class="right">Template WA</th></tr></thead>
+    <tbody>
+    {% for k in kunjungan %}
+      <tr class="{% if k.reminder %}is-reminder{% endif %}" data-testid="row-blast-{{ k.pk }}">
+        <td class="strong">{{ k.instansi.nama }}
+          {% if k.reminder %}<span class="badge REMINDER" data-testid="badge-reminder-{{ k.pk }}"><i class="fa-regular fa-bell"></i> Reminder hari ini · {{ k.reminder }}</span>{% endif %}
+        </td>
+        <td class="muted">{{ k.instansi.pic|default:"-" }}<br><small>{{ k.instansi.no_wa|default:"belum ada WA" }}</small></td>
+        <td>{{ k.tanggal|date:"d M Y" }}</td>
+        {% if user.is_spv %}<td>{{ k.sales.nama }}</td>{% endif %}
+        <td><span class="badge {{ k.status }}">{{ k.get_status_display }}</span></td>
+        <td><span class="pill">{{ k.get_tahap_display }}</span></td>
+        <td class="right">
+          <div class="wa-group">
+          {% for j in jenis_list %}
+            {% if bisa_kirim %}
+            <form method="post" action="{% url 'klik_wa' k.pk j %}" class="inline">{% csrf_token %}
+              <button type="submit" class="btn wa xs {% if j in k.terkirim %}sent{% endif %} {% if k.reminder == j %}pulse{% endif %}" data-testid="btn-wa-{{ j }}-{{ k.pk }}" title="{% if j in k.terkirim %}Sudah dikirim, kirim ulang{% else %}Kirim {{ j }}{% endif %}">
+                <i class="fa-brands fa-whatsapp"></i> {{ j }}{% if j in k.terkirim %} <i class="fa-solid fa-check"></i>{% endif %}
+              </button>
+            </form>
+            {% else %}
+            <span class="btn wa xs {% if j in k.terkirim %}sent{% else %}ghost{% endif %}">{{ j }}{% if j in k.terkirim %} <i class="fa-solid fa-check"></i>{% endif %}</span>
+            {% endif %}
+          {% endfor %}
+          </div>
+        </td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="7" class="empty-cell" data-testid="empty-blast">Belum ada kunjungan aktif.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+</div>
+{% endblock %}

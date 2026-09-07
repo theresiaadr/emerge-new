@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Detail Kunjungan{% endblock %}
+{% block page_title %}Detail Kunjungan{% endblock %}
+{% block page_sub %}{{ k.instansi.nama }} · {{ k.tanggal|date:"d M Y" }}{% if read_only %} · <span class="tag">read-only</span>{% endif %}{% endblock %}
+{% block content %}
+<div class="grid-2 detail">
+  <div>
+    <div class="cust-info" data-testid="cust-info">
+      <div class="cust-head">
+        <h2>{{ k.instansi.nama }}</h2>
+        <span class="badge {{ k.status }}" data-testid="detail-status">{{ k.get_status_display }}</span>
+      </div>
+      <dl>
+        <dt>PIC</dt><dd data-testid="detail-pic">{{ k.instansi.pic|default:"-" }}</dd>
+        <dt>No. WhatsApp</dt><dd data-testid="detail-no-wa">{{ k.instansi.no_wa|default:"-" }}</dd>
+        <dt>Alamat</dt><dd data-testid="detail-alamat">{{ k.instansi.alamat|default:"-"|linebreaksbr }}</dd>
+        <dt>Sales</dt><dd>{{ k.sales.nama }}</dd>
+        <dt>Tahap</dt><dd data-testid="detail-tahap">{{ k.get_tahap_display }}</dd>
+      </dl>
+      {% if not read_only %}
+      <div class="cust-actions">
+        <a href="{% url 'kunjungan_edit' k.pk %}" class="btn primary sm" data-testid="btn-edit">
+          <i class="fa-solid fa-pen"></i> Edit Kunjungan</a>
+        <a href="{% url 'blast_wa' %}" class="btn wa sm" data-testid="btn-ke-blast"><i class="fa-brands fa-whatsapp"></i> Blast WA</a>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head"><h2>Timeline</h2></div>
+    <ol class="timeline" data-testid="timeline">
+      {% for t in timeline %}
+      <li class="tl-{{ t.tipe }}">
+        <span class="tl-dot"></span>
+        <div class="tl-body">
+          <time>{{ t.waktu }}</time>
+          <b>{{ t.judul }}</b>
+          <p>{{ t.keterangan|linebreaksbr }}</p>
+        </div>
+      </li>
+      {% endfor %}
+    </ol>
+  </div>
+</div>
+<p class="back"><a href="{% url 'kunjungan_list' %}" class="link" data-testid="link-kembali"><i class="fa-solid fa-arrow-left"></i> Kembali ke daftar</a></p>
+{% endblock %}

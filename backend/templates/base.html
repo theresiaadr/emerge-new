@@ -1,0 +1,77 @@
+{% load static %}<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Report Sales{% endblock %} · Srikaton</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+</head>
+<body class="{% block body_class %}{% endblock %}">
+{% block body %}
+<div class="shell">
+  <aside class="sidebar" data-testid="sidebar">
+    <div class="brand">
+      <div class="brand-mark"><i class="fa-solid fa-chart-column"></i></div>
+      <div>
+        <div class="brand-name">Srikaton</div>
+        <div class="brand-sub">Report Sales</div>
+      </div>
+    </div>
+    {% with url_name=request.resolver_match.url_name %}
+    <nav class="nav">
+      <a href="{% url 'dashboard' %}" class="{% if url_name == 'dashboard' %}active{% endif %}" data-testid="nav-dashboard"><i class="fa-solid fa-gauge-high"></i> Dashboard</a>
+      <a href="{% url 'kunjungan_list' %}" class="{% if url_name|slice:':9' == 'kunjungan' %}active{% endif %}" data-testid="nav-kunjungan"><i class="fa-solid fa-clipboard-list"></i> Kunjungan</a>
+      <a href="{% url 'blast_wa' %}" class="{% if url_name == 'blast_wa' %}active{% endif %}" data-testid="nav-blast-wa"><i class="fa-brands fa-whatsapp"></i> Blast WA
+        {% if reminder_count %}<span class="nav-pill">{{ reminder_count }}</span>{% endif %}</a>
+      {% if user.is_spv %}
+      <a href="{% url 'export_excel' %}" data-testid="nav-export"><i class="fa-solid fa-file-excel"></i> Export Excel</a>
+      {% endif %}
+      {% if user.is_staff %}
+      <a href="{% url 'admin:index' %}" data-testid="nav-admin"><i class="fa-solid fa-screwdriver-wrench"></i> Admin</a>
+      {% endif %}
+    </nav>
+    {% endwith %}
+    <div class="sidebar-foot">
+      <div class="avatar">{{ user.nama|slice:':1'|upper }}</div>
+      <div class="who">
+        <div class="who-name" data-testid="sidebar-user-name">{{ user.nama }}</div>
+        <div class="who-role">{{ user.get_role_display }}</div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div>
+        <h1 class="page-title" data-testid="page-title">{% block page_title %}Dashboard{% endblock %}</h1>
+        <p class="page-sub">{% block page_sub %}{% endblock %}</p>
+      </div>
+      <div class="topbar-actions">
+        <a href="{% url 'blast_wa' %}" class="bell {% if reminder_count %}has{% endif %}" title="Reminder follow-up hari ini" data-testid="notif-bell">
+          <i class="fa-regular fa-bell"></i>
+          {% if reminder_count %}<span class="bell-count" data-testid="notif-count">{{ reminder_count }}</span>{% endif %}
+        </a>
+        <form method="post" action="{% url 'logout' %}" class="inline">{% csrf_token %}
+          <button type="submit" class="btn line sm" data-testid="logout-button"><i class="fa-solid fa-arrow-right-from-bracket"></i> Keluar</button>
+        </form>
+      </div>
+    </header>
+
+    {% if messages %}
+    <div class="messages" data-testid="messages">
+      {% for m in messages %}<div class="msg {{ m.tags }}">{{ m }}</div>{% endfor %}
+    </div>
+    {% endif %}
+
+    <section class="content">
+      {% block content %}{% endblock %}
+    </section>
+  </main>
+</div>
+{% endblock %}
+{% block scripts %}{% endblock %}
+</body>
+</html>
