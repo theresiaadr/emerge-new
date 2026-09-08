@@ -82,3 +82,9 @@ memory/test_credentials.md
 android-sdk/
 backend/db.sqlite3
 backend/staticfiles/
+.env
+.env.*
+*.env
+credentials.json
+*.key
+.credentials
